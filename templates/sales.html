@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Sales Management</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <nav class="navbar">
+
+        <h2>Inventory Management System</h2>
+
+        <div>
+            <a href="{{ url_for('dashboard') }}">Dashboard</a>
+            |
+            <a href="{{ url_for('products') }}">Products</a>
+            |
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </div>
+
+    </nav>
+
+
+    <div class="dashboard">
+
+        <h1>Sales Management</h1>
+
+        {% if message %}
+            <p class="success">{{ message }}</p>
+        {% endif %}
+
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% endif %}
+
+
+        <div class="form-container">
+
+            <h2>Record New Sale</h2>
+
+            <form method="POST">
+
+                <label>Select Product</label>
+
+                <select name="product_id" required>
+
+                    <option value="">
+                        -- Select Product --
+                    </option>
+
+                    {% for product in products %}
+
+                    <option value="{{ product[0] }}">
+
+                        {{ product[1] }}
+                        -
+                        ₹{{ product[3] }}
+                        -
+                        Stock: {{ product[4] }}
+
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+
+                <label>Quantity Sold</label>
+
+                <input
+                    type="number"
+                    name="quantity"
+                    min="1"
+                    required
+                >
+
+
+                <button type="submit">
+                    Record Sale
+                </button>
+
+            </form>
+
+        </div>
+
+
+        <h2>Recent Sales</h2>
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>Sale ID</th>
+                    <th>Product</th>
+                    <th>Quantity Sold</th>
+                    <th>Total Amount</th>
+                    <th>Date</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% if sales %}
+
+                    {% for sale in sales %}
+
+                    <tr>
+
+                        <td>{{ sale[0] }}</td>
+
+                        <td>{{ sale[1] }}</td>
+
+                        <td>{{ sale[2] }}</td>
+
+                        <td>₹{{ sale[3] }}</td>
+
+                        <td>{{ sale[4] }}</td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <tr>
+
+                        <td colspan="5">
+                            No sales recorded yet.
+                        </td>
+
+                    </tr>
+
+                {% endif %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</body>
+
+</html>

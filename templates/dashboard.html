@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Dashboard - Inventory Management System</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <h2>Inventory Management System</h2>
+
+        <a href="{{ url_for('logout') }}">Logout</a>
+    </nav>
+
+    <div class="dashboard">
+
+        <h1>Dashboard</h1>
+
+        <p>Welcome, <strong>{{ session['username'] }}</strong>!</p>
+
+        <div class="cards">
+
+            <div class="card">
+                <h3>Total Products</h3>
+                <p>{{ total_products }}</p>
+            </div>
+
+            <div class="card">
+                <h3>Total Stock</h3>
+                <p>{{ total_stock }}</p>
+            </div>
+
+            <div class="card">
+                <h3>Low Stock</h3>
+                <p>{{ low_stock }}</p>
+            </div>
+
+        </div>
+
+        <div class="actions">
+
+    <a href="{{ url_for('products') }}">
+        <button>Manage Products</button>
+    </a>
+
+    <a href="{{ url_for('sales') }}">
+        <button>Sales</button>
+    </a>
+
+    <a href="{{ url_for('low_stock') }}">
+        <button>⚠️ Low Stock</button>
+    </a>
+
+    <a href="{{ url_for('reports') }}">
+    <button>Reports</button>
+</a>
+
+</div>
+
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Add Product</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+<body>
+
+    <nav class="navbar">
+
+        <h2>Inventory Management System</h2>
+
+        <div>
+            <a href="{{ url_for('dashboard') }}">Dashboard</a>
+            |
+            <a href="{{ url_for('products') }}">Products</a>
+            |
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </div>
+
+    </nav>
+
+
+    <div class="form-container">
+
+        <h1>Add New Product</h1>
+
+        <form method="POST">
+
+            <label>Product Name</label>
+
+            <input type="text"
+                   name="name"
+                   placeholder="Enter product name"
+                   required>
+
+
+            <label>Category</label>
+
+            <input type="text"
+                   name="category"
+                   placeholder="Enter category"
+                   required>
+
+
+            <label>Price</label>
+
+            <input type="number"
+                   name="price"
+                   step="0.01"
+                   placeholder="Enter price"
+                   required>
+
+
+            <label>Quantity</label>
+
+            <input type="number"
+                   name="quantity"
+                   min="0"
+                   placeholder="Enter quantity"
+                   required>
+
+
+            <label>Supplier</label>
+
+            <input type="text"
+                   name="supplier"
+                   placeholder="Enter supplier name"
+                   required>
+
+
+            <button type="submit">
+                Save Product
+            </button>
+
+        </form>
+
+    </div>
+
+</body>
+
+</html>
