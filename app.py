@@ -1,17 +1,20 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 import mysql.connector
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 app = Flask(__name__)
 
-app.secret_key = "inventory_secret_key"
+app.secret_key = os.getenv("SECRET_KEY")
 
 # MySQL Database Connection
 db = mysql.connector.connect(
-    host="localhost",
-    port=3307,
-    user="root",
-    password="",
-    database="inventory_db"
+    host=os.getenv("DB_HOST"),
+    port=int(os.getenv("DB_PORT")),
+    user=os.getenv("DB_USER"),
+    password=os.getenv("DB_PASSWORD"),
+    database=os.getenv("DB_NAME")
 )
 
 
