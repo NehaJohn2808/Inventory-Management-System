@@ -1,5 +1,5 @@
 import unittest
-from app import app
+from app import app, db
 
 
 class InventoryAppTestCase(unittest.TestCase):
@@ -9,14 +9,13 @@ class InventoryAppTestCase(unittest.TestCase):
         app.config["SECRET_KEY"] = "jenkins-test-secret"
         self.client = app.test_client()
 
-    def login(self):
-        return self.client.post(
+        # Login before each test
+        self.client.post(
             "/",
             data={
                 "username": "jenkins_test",
                 "password": "test123"
-            },
-            follow_redirects=False
+            }
         )
 
     def test_login_page(self):
@@ -24,13 +23,23 @@ class InventoryAppTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_valid_login(self):
-        response = self.login()
+        client = app.test_client()
+
+        response = client.post(
+            "/",
+            data={
+                "username": "jenkins_test",
+                "password": "test123"
+            }
+        )
 
         self.assertEqual(response.status_code, 302)
         self.assertIn("/dashboard", response.headers["Location"])
 
     def test_invalid_login(self):
-        response = self.client.post(
+        client = app.test_client()
+
+        response = client.post(
             "/",
             data={
                 "username": "wrong_user",
@@ -39,53 +48,148 @@ class InventoryAppTestCase(unittest.TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn(b"Invalid username or password", response.data)
+        self.assertIn(
+            b"Invalid username or password",
+            response.data
+        )
 
-    def test_dashboard_after_login(self):
-        self.login()
-
+    def test_dashboard(self):
         response = self.client.get("/dashboard")
-
         self.assertEqual(response.status_code, 200)
 
-    def test_products_after_login(self):
-        self.login()
-
+    def test_products_page(self):
         response = self.client.get("/products")
-
         self.assertEqual(response.status_code, 200)
 
-    def test_low_stock_after_login(self):
-        self.login()
-
+    def test_low_stock_page(self):
         response = self.client.get("/low_stock")
-
         self.assertEqual(response.status_code, 200)
 
-    def test_reports_after_login(self):
-        self.login()
-
+    def test_reports_page(self):
         response = self.client.get("/reports")
-
         self.assertEqual(response.status_code, 200)
 
-    def test_logout(self):
-        self.login()
+    def test_add_product(self):
 
-        response = self.client.get(
-            "/logout",
+        response = self.client.post(
+            "/add_product",
+            data={
+                "name": "CI Test Product",
+                "category": "Testing",
+                "price": "250",
+                "quantity": "15",
+                "supplier": "Jenkins"
+            },
             follow_redirects=False
         )
 
         self.assertEqual(response.status_code, 302)
 
-    def test_dashboard_requires_login(self):
-        response = self.client.get("/dashboard")
+        cursor = db.cursor()
+
+        cursor.execute(
+            "SELECT * FROM products WHERE name = %s",
+            ("CI Test Product",)
+        )
+
+        product = cursor.fetchone()
+
+        cursor.close()
+
+        self.assertIsNotNone(product)
+
+    def test_search_product(self):
+
+        response = self.client.get(
+            "/products?search=Jenkins"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(
+            b"Jenkins",
+            response.data
+        )
+
+    def test_edit_product(self):
+
+        cursor = db.cursor()
+
+        cursor.execute(
+            "SELECT id FROM products WHERE name = %s LIMIT 1",
+            ("Jenkins Test Product",)
+        )
+
+        product = cursor.fetchone()
+
+        cursor.close()
+
+        self.assertIsNotNone(product)
+
+        product_id = product[0]
+
+        response = self.client.post(
+            f"/edit_product/{product_id}",
+            data={
+                "name": "Jenkins Test Product Updated",
+                "category": "Testing",
+                "price": "150",
+                "quantity": "20",
+                "supplier": "Jenkins"
+            },
+            follow_redirects=False
+        )
 
         self.assertEqual(response.status_code, 302)
 
-    def test_products_requires_login(self):
-        response = self.client.get("/products")
+    def test_delete_product(self):
+
+        cursor = db.cursor()
+
+        cursor.execute(
+            "INSERT INTO products "
+            "(name, category, price, quantity, supplier) "
+            "VALUES (%s, %s, %s, %s, %s)",
+            (
+                "Delete Test Product",
+                "Testing",
+                50,
+                5,
+                "Jenkins"
+            )
+        )
+
+        db.commit()
+
+        product_id = cursor.lastrowid
+
+        cursor.close()
+
+        response = self.client.get(
+            f"/delete_product/{product_id}",
+            follow_redirects=False
+        )
+
+        self.assertEqual(response.status_code, 302)
+
+        cursor = db.cursor()
+
+        cursor.execute(
+            "SELECT * FROM products WHERE id = %s",
+            (product_id,)
+        )
+
+        product = cursor.fetchone()
+
+        cursor.close()
+
+        self.assertIsNone(product)
+
+    def test_logout(self):
+
+        response = self.client.get(
+            "/logout",
+            follow_redirects=False
+        )
 
         self.assertEqual(response.status_code, 302)
 
