@@ -1,6 +1,15 @@
 pipeline {
     agent any
 
+    environment {
+        DB_HOST = 'localhost'
+        DB_PORT = '3307'
+        DB_USER = 'root'
+        DB_PASSWORD = ''
+        DB_NAME = 'inventory_test'
+        SECRET_KEY = 'jenkins-test-secret'
+    }
+
     stages {
 
         stage('Checkout') {
