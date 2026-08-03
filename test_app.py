@@ -193,6 +193,102 @@ class InventoryAppTestCase(unittest.TestCase):
 
         self.assertEqual(response.status_code, 302)
 
+    def test_record_sale(self):
 
+        cursor = db.cursor()
+
+        cursor.execute(
+            "INSERT INTO products "
+            "(name, category, price, quantity, supplier) "
+            "VALUES (%s, %s, %s, %s, %s)",
+            (
+                "Sales Test Product",
+                "Testing",
+                100,
+                10,
+                "Jenkins"
+            )
+        )
+
+        db.commit()
+
+        product_id = cursor.lastrowid
+
+        cursor.close()
+
+        response = self.client.post(
+            "/sales",
+            data={
+                "product_id": str(product_id),
+                "quantity": "3"
+            },
+            follow_redirects=False
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        cursor = db.cursor()
+
+        cursor.execute(
+            "SELECT quantity FROM products WHERE id = %s",
+            (product_id,)
+        )
+
+        product = cursor.fetchone()
+
+        cursor.execute(
+            "SELECT quantity_sold, total_amount "
+            "FROM sales "
+            "WHERE product_id = %s "
+            "ORDER BY id DESC LIMIT 1",
+            (product_id,)
+        )
+
+        sale = cursor.fetchone()
+
+        cursor.close()
+
+        self.assertEqual(product[0], 7)
+        self.assertEqual(sale[0], 3)
+        self.assertEqual(float(sale[1]), 300.0)
+
+
+    def test_prevent_overselling(self):
+
+        cursor = db.cursor()
+
+        cursor.execute(
+            "INSERT INTO products "
+            "(name, category, price, quantity, supplier) "
+            "VALUES (%s, %s, %s, %s, %s)",
+            (
+                "Stock Test Product",
+                "Testing",
+                100,
+                5,
+                "Jenkins"
+            )
+        )
+
+        db.commit()
+
+        product_id = cursor.lastrowid
+
+        cursor.close()
+
+        response = self.client.post(
+            "/sales",
+            data={
+                "product_id": str(product_id),
+                "quantity": "10"
+            }
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        self.assertIn(
+            b"Only 5 units",
+            response.data
+        )
 if __name__ == "__main__":
     unittest.main()
