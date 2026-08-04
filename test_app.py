@@ -1,5 +1,6 @@
+```python
 import unittest
-from app import app, get_db_connection
+from app import app, db
 
 
 class InventoryAppTestCase(unittest.TestCase):
@@ -70,7 +71,6 @@ class InventoryAppTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_add_product(self):
-
         response = self.client.post(
             "/add_product",
             data={
@@ -85,35 +85,31 @@ class InventoryAppTestCase(unittest.TestCase):
 
         self.assertEqual(response.status_code, 302)
 
-        db = get_db_connection()
-           cursor = db.cursor()
+        cursor = db.cursor()
 
         cursor.execute(
-            "SELECT * FROM products WHERE name = %s",
+            "SELECT id FROM products WHERE name = %s",
             ("CI Test Product",)
         )
 
         product = cursor.fetchone()
-
         cursor.close()
-        db.close()
 
         self.assertIsNotNone(product)
 
     def test_search_product(self):
-
         response = self.client.get(
             "/products?search=Jenkins"
         )
 
         self.assertEqual(response.status_code, 200)
+
         self.assertIn(
             b"Jenkins",
             response.data
         )
 
     def test_edit_product(self):
-
         cursor = db.cursor()
 
         cursor.execute(
@@ -122,7 +118,6 @@ class InventoryAppTestCase(unittest.TestCase):
         )
 
         product = cursor.fetchone()
-
         cursor.close()
 
         self.assertIsNotNone(product)
@@ -144,13 +139,14 @@ class InventoryAppTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 302)
 
     def test_delete_product(self):
-
         cursor = db.cursor()
 
         cursor.execute(
-            "INSERT INTO products "
-            "(name, category, price, quantity, supplier) "
-            "VALUES (%s, %s, %s, %s, %s)",
+            """
+            INSERT INTO products
+            (name, category, price, quantity, supplier)
+            VALUES (%s, %s, %s, %s, %s)
+            """,
             (
                 "Delete Test Product",
                 "Testing",
@@ -163,7 +159,6 @@ class InventoryAppTestCase(unittest.TestCase):
         db.commit()
 
         product_id = cursor.lastrowid
-
         cursor.close()
 
         response = self.client.get(
@@ -176,18 +171,16 @@ class InventoryAppTestCase(unittest.TestCase):
         cursor = db.cursor()
 
         cursor.execute(
-            "SELECT * FROM products WHERE id = %s",
+            "SELECT id FROM products WHERE id = %s",
             (product_id,)
         )
 
         product = cursor.fetchone()
-
         cursor.close()
 
         self.assertIsNone(product)
 
     def test_logout(self):
-
         response = self.client.get(
             "/logout",
             follow_redirects=False
@@ -196,13 +189,14 @@ class InventoryAppTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 302)
 
     def test_record_sale(self):
-
         cursor = db.cursor()
 
         cursor.execute(
-            "INSERT INTO products "
-            "(name, category, price, quantity, supplier) "
-            "VALUES (%s, %s, %s, %s, %s)",
+            """
+            INSERT INTO products
+            (name, category, price, quantity, supplier)
+            VALUES (%s, %s, %s, %s, %s)
+            """,
             (
                 "Sales Test Product",
                 "Testing",
@@ -215,7 +209,6 @@ class InventoryAppTestCase(unittest.TestCase):
         db.commit()
 
         product_id = cursor.lastrowid
-
         cursor.close()
 
         response = self.client.post(
@@ -239,30 +232,32 @@ class InventoryAppTestCase(unittest.TestCase):
         product = cursor.fetchone()
 
         cursor.execute(
-            "SELECT quantity_sold, total_amount "
-            "FROM sales "
-            "WHERE product_id = %s "
-            "ORDER BY id DESC LIMIT 1",
+            """
+            SELECT quantity_sold, total_amount
+            FROM sales
+            WHERE product_id = %s
+            ORDER BY id DESC
+            LIMIT 1
+            """,
             (product_id,)
         )
 
         sale = cursor.fetchone()
-
         cursor.close()
 
         self.assertEqual(product[0], 7)
         self.assertEqual(sale[0], 3)
         self.assertEqual(float(sale[1]), 300.0)
 
-
     def test_prevent_overselling(self):
-
         cursor = db.cursor()
 
         cursor.execute(
-            "INSERT INTO products "
-            "(name, category, price, quantity, supplier) "
-            "VALUES (%s, %s, %s, %s, %s)",
+            """
+            INSERT INTO products
+            (name, category, price, quantity, supplier)
+            VALUES (%s, %s, %s, %s, %s)
+            """,
             (
                 "Stock Test Product",
                 "Testing",
@@ -275,7 +270,6 @@ class InventoryAppTestCase(unittest.TestCase):
         db.commit()
 
         product_id = cursor.lastrowid
-
         cursor.close()
 
         response = self.client.post(
@@ -292,5 +286,8 @@ class InventoryAppTestCase(unittest.TestCase):
             b"Only 5 units",
             response.data
         )
+
+
 if __name__ == "__main__":
     unittest.main()
+```
