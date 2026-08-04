@@ -1,5 +1,5 @@
 import unittest
-from app import app, db
+from app import app, get_db_connection
 
 
 class InventoryAppTestCase(unittest.TestCase):
@@ -85,7 +85,8 @@ class InventoryAppTestCase(unittest.TestCase):
 
         self.assertEqual(response.status_code, 302)
 
-        cursor = db.cursor()
+        db = get_db_connection()
+           cursor = db.cursor()
 
         cursor.execute(
             "SELECT * FROM products WHERE name = %s",
@@ -95,6 +96,7 @@ class InventoryAppTestCase(unittest.TestCase):
         product = cursor.fetchone()
 
         cursor.close()
+        db.close()
 
         self.assertIsNotNone(product)
 
