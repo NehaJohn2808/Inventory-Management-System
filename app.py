@@ -1,12 +1,15 @@
+```python
 from flask import Flask, render_template, request, redirect, url_for, session
 import mysql.connector
 import os
 from dotenv import load_dotenv
+
 load_dotenv()
 
 app = Flask(__name__)
 
 app.secret_key = os.getenv("SECRET_KEY")
+
 
 # MySQL Database Connection
 def get_db_connection():
@@ -27,8 +30,8 @@ def login():
         username = request.form["username"]
         password = request.form["password"]
 
+        db = get_db_connection()
         cursor = db.cursor()
-        db.close()
 
         query = """
         SELECT * FROM users
@@ -40,6 +43,7 @@ def login():
         user = cursor.fetchone()
 
         cursor.close()
+        db.close()
 
         if user:
             session["username"] = username
@@ -60,23 +64,24 @@ def dashboard():
     if "username" not in session:
         return redirect(url_for("login"))
 
+    db = get_db_connection()
     cursor = db.cursor()
 
-    # Total number of products
     cursor.execute("SELECT COUNT(*) FROM products")
     total_products = cursor.fetchone()[0]
 
-    # Total stock quantity
-    cursor.execute("SELECT COALESCE(SUM(quantity), 0) FROM products")
+    cursor.execute(
+        "SELECT COALESCE(SUM(quantity), 0) FROM products"
+    )
     total_stock = cursor.fetchone()[0]
 
-    # Products with stock less than or equal to 5
     cursor.execute(
         "SELECT COUNT(*) FROM products WHERE quantity <= 5"
     )
     low_stock = cursor.fetchone()[0]
 
     cursor.close()
+    db.close()
 
     return render_template(
         "dashboard.html",
@@ -84,6 +89,7 @@ def dashboard():
         total_stock=total_stock,
         low_stock=low_stock
     )
+
 
 @app.route("/products")
 def products():
@@ -93,6 +99,7 @@ def products():
 
     search = request.args.get("search", "")
 
+    db = get_db_connection()
     cursor = db.cursor()
 
     if search:
@@ -119,6 +126,7 @@ def products():
     products = cursor.fetchall()
 
     cursor.close()
+    db.close()
 
     return render_template(
         "products.html",
@@ -126,12 +134,14 @@ def products():
         search=search
     )
 
+
 @app.route("/edit_product/<int:id>", methods=["GET", "POST"])
 def edit_product(id):
 
     if "username" not in session:
         return redirect(url_for("login"))
 
+    db = get_db_connection()
     cursor = db.cursor()
 
     if request.method == "POST":
@@ -160,6 +170,7 @@ def edit_product(id):
         db.commit()
 
         cursor.close()
+        db.close()
 
         return redirect(url_for("products"))
 
@@ -171,6 +182,7 @@ def edit_product(id):
     product = cursor.fetchone()
 
     cursor.close()
+    db.close()
 
     if product is None:
         return "Product not found", 404
@@ -180,12 +192,14 @@ def edit_product(id):
         product=product
     )
 
+
 @app.route("/delete_product/<int:id>")
 def delete_product(id):
 
     if "username" not in session:
         return redirect(url_for("login"))
 
+    db = get_db_connection()
     cursor = db.cursor()
 
     cursor.execute(
@@ -196,8 +210,10 @@ def delete_product(id):
     db.commit()
 
     cursor.close()
+    db.close()
 
     return redirect(url_for("products"))
+
 
 @app.route("/add_product", methods=["GET", "POST"])
 def add_product():
@@ -213,6 +229,7 @@ def add_product():
         quantity = request.form["quantity"]
         supplier = request.form["supplier"]
 
+        db = get_db_connection()
         cursor = db.cursor()
 
         query = """
@@ -229,16 +246,20 @@ def add_product():
         db.commit()
 
         cursor.close()
+        db.close()
 
         return redirect(url_for("products"))
 
     return render_template("add_product.html")
+
+
 @app.route("/sales", methods=["GET", "POST"])
 def sales():
 
     if "username" not in session:
         return redirect(url_for("login"))
 
+    db = get_db_connection()
     cursor = db.cursor()
 
     if request.method == "POST":
@@ -246,7 +267,6 @@ def sales():
         product_id = request.form["product_id"]
         quantity_sold = int(request.form["quantity"])
 
-        # Get product details
         cursor.execute(
             "SELECT name, price, quantity FROM products WHERE id = %s",
             (product_id,)
@@ -255,7 +275,9 @@ def sales():
         product = cursor.fetchone()
 
         if product is None:
+
             cursor.close()
+            db.close()
 
             return render_template(
                 "sales.html",
@@ -268,7 +290,6 @@ def sales():
         price = float(product[1])
         available_quantity = product[2]
 
-        # Check stock
         if quantity_sold > available_quantity:
 
             cursor.execute("""
@@ -295,6 +316,7 @@ def sales():
             sales_data = cursor.fetchall()
 
             cursor.close()
+            db.close()
 
             return render_template(
                 "sales.html",
@@ -303,10 +325,8 @@ def sales():
                 error=f"Only {available_quantity} units of {product_name} are available."
             )
 
-        # Calculate total
         total_amount = price * quantity_sold
 
-        # Record sale
         cursor.execute("""
             INSERT INTO sales
             (product_id, quantity_sold, total_amount)
@@ -317,7 +337,6 @@ def sales():
             total_amount
         ))
 
-        # Update stock
         cursor.execute("""
             UPDATE products
             SET quantity = quantity - %s
@@ -329,7 +348,6 @@ def sales():
 
         db.commit()
 
-    # Get products
     cursor.execute("""
         SELECT id, name, category, price, quantity, supplier
         FROM products
@@ -338,7 +356,6 @@ def sales():
 
     products = cursor.fetchall()
 
-    # Get recent sales
     cursor.execute("""
         SELECT
             sales.id,
@@ -355,6 +372,7 @@ def sales():
     sales_data = cursor.fetchall()
 
     cursor.close()
+    db.close()
 
     return render_template(
         "sales.html",
@@ -365,12 +383,15 @@ def sales():
         else None,
         error=None
     )
+
+
 @app.route("/low_stock")
 def low_stock():
 
     if "username" not in session:
         return redirect(url_for("login"))
 
+    db = get_db_connection()
     cursor = db.cursor()
 
     cursor.execute("""
@@ -383,52 +404,43 @@ def low_stock():
     products = cursor.fetchall()
 
     cursor.close()
+    db.close()
 
     return render_template(
         "low_stock.html",
         products=products
     )
+
+
 @app.route("/reports")
 def reports():
 
     if "username" not in session:
         return redirect(url_for("login"))
 
+    db = get_db_connection()
     cursor = db.cursor()
 
-    # Total products
     cursor.execute(
         "SELECT COUNT(*) FROM products"
     )
-
     total_products = cursor.fetchone()[0]
 
-
-    # Total stock
     cursor.execute(
         "SELECT COALESCE(SUM(quantity), 0) FROM products"
     )
-
     total_stock = cursor.fetchone()[0]
 
-
-    # Number of sales
     cursor.execute(
         "SELECT COUNT(*) FROM sales"
     )
-
     total_sales = cursor.fetchone()[0]
 
-
-    # Total sales amount
     cursor.execute(
         "SELECT COALESCE(SUM(total_amount), 0) FROM sales"
     )
-
     total_sales_amount = cursor.fetchone()[0]
 
-
-    # Inventory data
     cursor.execute("""
         SELECT
             id,
@@ -443,8 +455,6 @@ def reports():
 
     products = cursor.fetchall()
 
-
-    # Sales data
     cursor.execute("""
         SELECT
             sales.id,
@@ -460,9 +470,8 @@ def reports():
 
     sales_data = cursor.fetchall()
 
-
     cursor.close()
-
+    db.close()
 
     return render_template(
         "reports.html",
@@ -474,6 +483,7 @@ def reports():
         sales=sales_data
     )
 
+
 @app.route("/logout")
 def logout():
 
@@ -484,3 +494,4 @@ def logout():
 
 if __name__ == "__main__":
     app.run(debug=True)
+```
