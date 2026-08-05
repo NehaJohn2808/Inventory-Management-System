@@ -21,6 +21,8 @@ def get_db_connection():
         database=os.getenv("DB_NAME")
     )
 
+db = get_db_connection()
+cursor = db.cursor()
 
 @app.route("/", methods=["GET", "POST"])
 def login():
