@@ -1,4 +1,3 @@
-```python
 import unittest
 from app import app, db
 
@@ -290,4 +289,4 @@ class InventoryAppTestCase(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-```
+
