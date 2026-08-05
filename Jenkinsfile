@@ -1,7 +1,7 @@
 pipeline {
 agent any
 
-```
+
 environment {
     DB_HOST = 'localhost'
     DB_PORT = '3307'
@@ -45,6 +45,6 @@ post {
         echo 'CI Pipeline failed.'
     }
 }
-```
+
 
 }
