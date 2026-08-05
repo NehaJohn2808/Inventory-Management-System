@@ -1,15 +1,14 @@
 import unittest
-from app import app, db
-
+from app import app, get_db_connection
 
 class InventoryAppTestCase(unittest.TestCase):
+
 
     def setUp(self):
         app.config["TESTING"] = True
         app.config["SECRET_KEY"] = "jenkins-test-secret"
         self.client = app.test_client()
 
-        # Login before each test
         self.client.post(
             "/",
             data={
@@ -84,7 +83,8 @@ class InventoryAppTestCase(unittest.TestCase):
 
         self.assertEqual(response.status_code, 302)
 
-        cursor = db.cursor()
+        db = get_db_connection()
+        cursor = db.cursor(buffered=True)
 
         cursor.execute(
             "SELECT id FROM products WHERE name = %s",
@@ -93,6 +93,7 @@ class InventoryAppTestCase(unittest.TestCase):
 
         product = cursor.fetchone()
         cursor.close()
+        db.close()
 
         self.assertIsNotNone(product)
 
@@ -102,26 +103,37 @@ class InventoryAppTestCase(unittest.TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-
+ 
         self.assertIn(
             b"Jenkins",
             response.data
         )
 
     def test_edit_product(self):
-        cursor = db.cursor()
+        db = get_db_connection()
+        db = get_db_connection()
+        cursor = db.cursor(buffered=True)
 
         cursor.execute(
-            "SELECT id FROM products WHERE name = %s LIMIT 1",
-            ("Jenkins Test Product",)
+            """
+            INSERT INTO products
+            (name, category, price, quantity, supplier)
+            VALUES (%s, %s, %s, %s, %s)
+            """,
+            (
+                "Jenkins Test Product",
+                "Testing",
+                100,
+                10,
+                "Jenkins"
+            )
         )
 
-        product = cursor.fetchone()
+        db.commit()
+
+        product_id = cursor.lastrowid
         cursor.close()
-
-        self.assertIsNotNone(product)
-
-        product_id = product[0]
+        db.close()
 
         response = self.client.post(
             f"/edit_product/{product_id}",
@@ -137,8 +149,40 @@ class InventoryAppTestCase(unittest.TestCase):
 
         self.assertEqual(response.status_code, 302)
 
+        db = get_db_connection()
+        cursor = db.cursor(buffered=True)
+
+
+        cursor.execute(
+            """
+            SELECT name, price, quantity
+            FROM products
+            WHERE id = %s
+            """,
+            (product_id,)
+        )
+
+        product = cursor.fetchone()
+        cursor.close()
+        db.close()
+
+        self.assertIsNotNone(product)
+        self.assertEqual(
+            product[0],
+            "Jenkins Test Product Updated"
+        )
+        self.assertEqual(
+            float(product[1]),
+            150.0
+        )
+        self.assertEqual(
+            product[2],
+            20
+        )
+
     def test_delete_product(self):
-        cursor = db.cursor()
+        db = get_db_connection()
+        cursor = db.cursor(buffered=True)
 
         cursor.execute(
             """
@@ -154,11 +198,12 @@ class InventoryAppTestCase(unittest.TestCase):
                 "Jenkins"
             )
         )
-
+ 
         db.commit()
 
         product_id = cursor.lastrowid
         cursor.close()
+        db.close()
 
         response = self.client.get(
             f"/delete_product/{product_id}",
@@ -166,8 +211,8 @@ class InventoryAppTestCase(unittest.TestCase):
         )
 
         self.assertEqual(response.status_code, 302)
-
-        cursor = db.cursor()
+        db = get_db_connection()
+        cursor = db.cursor(buffered=True)
 
         cursor.execute(
             "SELECT id FROM products WHERE id = %s",
@@ -176,7 +221,7 @@ class InventoryAppTestCase(unittest.TestCase):
 
         product = cursor.fetchone()
         cursor.close()
-
+        db.close()
         self.assertIsNone(product)
 
     def test_logout(self):
@@ -188,7 +233,8 @@ class InventoryAppTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 302)
 
     def test_record_sale(self):
-        cursor = db.cursor()
+        db = get_db_connection()
+        cursor = db.cursor(buffered=True)
 
         cursor.execute(
             """
@@ -204,12 +250,12 @@ class InventoryAppTestCase(unittest.TestCase):
                 "Jenkins"
             )
         )
-
+ 
         db.commit()
 
         product_id = cursor.lastrowid
         cursor.close()
-
+        db.close()
         response = self.client.post(
             "/sales",
             data={
@@ -220,8 +266,8 @@ class InventoryAppTestCase(unittest.TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-
-        cursor = db.cursor()
+        db = get_db_connection()
+        cursor = db.cursor(buffered=True)
 
         cursor.execute(
             "SELECT quantity FROM products WHERE id = %s",
@@ -240,16 +286,17 @@ class InventoryAppTestCase(unittest.TestCase):
             """,
             (product_id,)
         )
-
+  
         sale = cursor.fetchone()
         cursor.close()
-
+        db.close()
         self.assertEqual(product[0], 7)
         self.assertEqual(sale[0], 3)
         self.assertEqual(float(sale[1]), 300.0)
 
     def test_prevent_overselling(self):
-        cursor = db.cursor()
+        db = get_db_connection()
+        cursor = db.cursor(buffered=True)
 
         cursor.execute(
             """
@@ -265,18 +312,19 @@ class InventoryAppTestCase(unittest.TestCase):
                 "Jenkins"
             )
         )
-
+  
         db.commit()
 
         product_id = cursor.lastrowid
         cursor.close()
-
+        db.close()
         response = self.client.post(
             "/sales",
             data={
                 "product_id": str(product_id),
                 "quantity": "10"
-            }
+            },
+            follow_redirects=False
         )
 
         self.assertEqual(response.status_code, 200)
@@ -287,6 +335,5 @@ class InventoryAppTestCase(unittest.TestCase):
         )
 
 
-if __name__ == "__main__":
-    unittest.main()
-
+    if __name__ == "__main__":
+        unittest.main()
