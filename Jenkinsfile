@@ -29,12 +29,14 @@ stages {
             bat '"C:\\Users\\Neha John\\AppData\\Local\\Programs\\Python\\Python313\\python.exe" -m unittest test_app.py'
         }
     }
-
+    
     stage('Build') {
         steps {
+            bat '"C:\\Users\\Neha John\\AppData\\Local\\Programs\\Python\\Python313\\python.exe" -m py_compile app.py'
             echo 'Build completed successfully.'
         }
     }
+    
 }
 
 post {
