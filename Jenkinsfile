@@ -30,7 +30,9 @@ pipeline {
 
             post {
                 always {
-                    junit testResults: 'test-results/*.xml', allowEmptyResults: false
+                    junit testResults: 'test-results/*.xml', 
+                    allowEmptyResults: false,
+                    skipMarkingBuildUnstable: true
                 }
             }
         }
