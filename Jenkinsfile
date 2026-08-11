@@ -11,7 +11,6 @@ pipeline {
     }
 
     stages {
-
         stage('Checkout') {
             steps {
                 echo 'Checking out source code from GitHub...'
@@ -31,7 +30,7 @@ pipeline {
 
             post {
                 always {
-                    junit 'test-results/*.xml'
+                    junit testResults: 'test-results/*.xml', allowEmptyResults: false
                 }
             }
         }
