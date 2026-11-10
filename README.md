@@ -1,14 +1,14 @@
 
 # Inventory Management System
 
-A web-based Inventory Management System developed using Python, Flask and MySQL. This project supports product management, stock tracking, sales management and reports.
+A web-based Inventory Management System developed using Python, Flask and MySQL. This project helps manage products, stock and sales through a web application.
 
 ## Technologies Used
 
 - Python
 - Flask
 - MySQL
-- HTML, CSS
+- HTML and CSS
 - Git and GitHub
 - Jenkins
 - Docker
@@ -30,7 +30,7 @@ Inventory-Management-System/
 
 ## 1. Prerequisites
 
-Install the following:
+Install the following software:
 
 - Python 3.x
 - MySQL Server
@@ -46,7 +46,7 @@ Open Command Prompt or VS Code Terminal.
 git clone https://github.com/NehaJohn2808/Inventory-Management-System.git
 ```
 
-Move into the project folder:
+Move into the project directory:
 
 ```bash
 cd Inventory-Management-System
@@ -58,7 +58,7 @@ cd Inventory-Management-System
 python -m venv venv
 ```
 
-Activate the environment on Windows:
+Activate the virtual environment on Windows:
 
 ```bash
 venv\Scripts\activate
@@ -74,78 +74,57 @@ python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-## 5. Configure MySQL Database
+## 5. Database Configuration
 
-Start your MySQL Server.
-
-Create the database:
+1. Start MySQL Server.
+2. Create the project database using MySQL:
 
 ```sql
 CREATE DATABASE inventory_db;
 ```
 
-Select the database:
+3. Configure the database connection using the settings required by the application.
+4. Create or import the required database tables before running the application.
 
-```sql
-USE inventory_db;
-```
+**Note:** Each team member must configure their own MySQL username, password and database connection.
 
-**Important:** The application also requires the `users`, `products` and `sales` tables. Set up the project database tables before starting the application. The SQL schema should be provided with the project.
+## 6. Run the Application
 
-## 6. Configure Environment Variables
-
-Create a file named `.env` in the main project folder.
-
-Add the following configuration:
-
-```env
-SECRET_KEY=replace_with_your_own_secret_key
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_USER=root
-DB_PASSWORD=your_mysql_password
-DB_NAME=inventory_db
-```
-
-Replace `your_mysql_password` with your own MySQL password.
-
-If your MySQL server uses a different port, update `DB_PORT`.
-
-Do not upload the `.env` file or your database password to GitHub.
-
-## 7. Run the Application
-
-Make sure MySQL is running and the database is configured.
-
-Execute:
+After installing dependencies and configuring MySQL, execute:
 
 ```bash
 python app.py
 ```
 
-Open your browser:
+Open the application in your browser:
 
 ```text
 http://127.0.0.1:5000/
 ```
 
-## 8. Run Unit Tests
+## 7. Run Unit Tests
 
-Execute:
+Execute the following command:
 
 ```bash
 python -m unittest -v test_app
 ```
 
-## 9. Jenkins CI Pipeline
+## 8. Jenkins CI Pipeline
 
-The repository contains a Jenkinsfile for the CI pipeline.
+The project includes a Jenkinsfile for Continuous Integration.
 
-Jenkins is used to automate the project testing and build process.
+Jenkins is used to automate the build and testing process.
 
-The pipeline can be executed through the configured Jenkins job.
+To execute the pipeline:
 
-## 10. Docker Commands
+1. Open the Jenkins dashboard.
+2. Select the configured Inventory Management CI job.
+3. Click Build Now.
+4. Check the Console Output.
+5. Verify the test results.
+
+## 9. Docker Commands
 
 Build the Docker image:
 
@@ -159,23 +138,35 @@ Run the Docker container:
 docker run -p 5000:5000 inventory-management-system:latest
 ```
 
-Note: Configure the database connection appropriately when running the application inside Docker.
+**Note:** Configure the database connection and Docker networking before running the application inside a container.
 
-## 11. Git Commands for Team Members
+## 10. Git Commands for Team Members
 
-Check the current status:
+Clone the repository:
 
 ```bash
-git status
+git clone https://github.com/NehaJohn2808/Inventory-Management-System.git
 ```
 
-Get the latest changes:
+Get the latest updates:
 
 ```bash
 git pull origin main
 ```
 
-Add modified files:
+Create a separate branch:
+
+```bash
+git checkout -b feature-your-name
+```
+
+Check modified files:
+
+```bash
+git status
+```
+
+Add changes:
 
 ```bash
 git add .
@@ -187,20 +178,24 @@ Commit changes:
 git commit -m "Updated Inventory Management System"
 ```
 
-Push changes to GitHub:
+Push the branch:
 
 ```bash
-git push origin main
+git push origin feature-your-name
 ```
+
+After pushing, create a Pull Request on GitHub to merge the changes into the main branch.
 
 ## Project Team
 
- Name               Roll Number 
- B Chandini         24AG1A05BG 
- D Sathvika         24AG1A05BN 
- N Neha             24AG1A05CS 
- P Priyanka         24AG1A05CY 
-Class: III Year B.Tech – CSE, Semester I, Section G  
-College: ACE Engineering College
-III Year B.Tech – CSE, Semester I, Section G.
-ACE Engineering College.
+| Name | Roll Number |
+|---|---|
+| B Chandini | 24AG1A05BG |
+| D Sathvika | 24AG1A05BN |
+| N Neha | 24AG1A05CS |
+| P Priyanka | 24AG1A05CY |
+
+Class: III Year B.Tech – CSE, Semester I, Section G
+
+
+**College:** ACE Engineering College
