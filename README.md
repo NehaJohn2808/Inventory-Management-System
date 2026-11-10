@@ -1,96 +1,137 @@
-
 # Inventory Management System
 
-A web-based Inventory Management System developed using Python, Flask and MySQL. This project helps manage products, stock and sales through a web application.
+## Project Overview
+
+The **Inventory Management System** is a web-based application developed using Python Flask and MySQL. It helps manage inventory operations, including product information, sales records, and user details.
+
+The project demonstrates the use of web development, database connectivity, software testing, and Continuous Integration (CI) using Jenkins. It can be executed locally or using Docker.
 
 ## Technologies Used
 
-- Python
-- Flask
-- MySQL
-- HTML and CSS
-- Git and GitHub
-- Jenkins
-- Docker
+- **Programming Language:** Python
+- **Backend Framework:** Flask
+- **Frontend:** HTML, CSS, JavaScript
+- **Database:** MySQL / MariaDB
+- **Database Management:** phpMyAdmin
+- **Testing:** Python Unit Testing
+- **CI Tool:** Jenkins
+- **Containerization:** Docker
+- **Version Control:** Git and GitHub
 
 ## Project Structure
 
 ```text
 Inventory-Management-System/
 │
-├── static/
-├── templates/
 ├── app.py
 ├── requirements.txt
 ├── test_app.py
 ├── Jenkinsfile
+├── Dockerfile
+├── .dockerignore
+├── .gitignore
+├── .env.example
 ├── README.md
-└── .gitignore
+│
+├── static/
+│
+└── templates/
 ```
 
-## 1. Prerequisites
+## Prerequisites
 
-Install the following software:
+Install the following software before running the project:
 
-- Python 3.x
-- MySQL Server
+- Python 3.11 or later
+- XAMPP (MySQL / MariaDB and phpMyAdmin)
 - Git
-- Docker (optional)
-- Jenkins (for CI pipeline)
+- Docker Desktop (for Docker execution)
+- Jenkins (for CI pipeline execution)
 
-## 2. Clone the Repository
+## 1. Clone the Repository
 
-Open Command Prompt or VS Code Terminal.
+Open a terminal and execute:
 
 ```bash
 git clone https://github.com/NehaJohn2808/Inventory-Management-System.git
 ```
 
-Move into the project directory:
+Navigate into the project directory:
 
 ```bash
 cd Inventory-Management-System
 ```
 
-## 3. Create a Virtual Environment
+## 2. Create a Virtual Environment
+
+Create a Python virtual environment:
 
 ```bash
 python -m venv venv
 ```
 
-Activate the virtual environment on Windows:
+Activate it on Windows:
 
 ```bash
 venv\Scripts\activate
 ```
 
-## 4. Install Dependencies
+## 3. Install Dependencies
 
-```bash
-python -m pip install --upgrade pip
-```
+Install all required Python packages:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## 5. Database Configuration
+## 4. Database Configuration
 
-1. Start MySQL Server.
-2. Create the project database using MySQL:
+The application uses MySQL / MariaDB as its database.
+
+### Start the Database
+
+1. Open XAMPP Control Panel.
+2. Start Apache.
+3. Start MySQL.
+4. Open phpMyAdmin:
+
+   http://localhost:8080/phpmyadmin/
+
+### Create the Database
+
+Create a database named:
 
 ```sql
 CREATE DATABASE inventory_db;
 ```
 
-3. Configure the database connection using the settings required by the application.
-4. Create or import the required database tables before running the application.
+If a database export (`.sql` file) is included in the repository, select `inventory_db` in phpMyAdmin and import that file to create the required tables and records.
 
-**Note:** Each team member must configure their own MySQL username, password and database connection.
+If no SQL export is included, the required database tables must be created using the project's database schema before running the application.
 
-## 6. Run the Application
+### Configure Environment Variables
 
-After installing dependencies and configuring MySQL, execute:
+Create a file named `.env` in the project root directory.
+
+Add the following configuration:
+
+```env
+SECRET_KEY=your_secret_key
+DB_HOST=localhost
+DB_PORT=3307
+DB_USER=root
+DB_PASSWORD=
+DB_NAME=inventory_db
+```
+
+**Note:**
+- Change `DB_PORT` if your MySQL / MariaDB server uses a different port.
+- Enter your database password in `DB_PASSWORD` if one is configured.
+- Keep your actual `.env` file private. Do not upload it to GitHub.
+
+## 5. Run the Application
+
+After configuring the database, execute:
 
 ```bash
 python app.py
@@ -98,104 +139,61 @@ python app.py
 
 Open the application in your browser:
 
-```text
 http://127.0.0.1:5000/
-```
 
-## 7. Run Unit Tests
+## 6. Run Unit Tests
 
-Execute the following command:
+The project includes unit tests to verify application functionality.
+
+Execute:
 
 ```bash
 python -m unittest -v test_app
 ```
 
-## 8. Jenkins CI Pipeline
+The test results will display the number of tests executed and whether they passed or failed.
 
-The project includes a Jenkinsfile for Continuous Integration.
+## 7. Continuous Integration Using Jenkins
 
 Jenkins is used to automate the build and testing process.
 
-To execute the pipeline:
+### Jenkins Pipeline Steps
 
-1. Open the Jenkins dashboard.
-2. Select the configured Inventory Management CI job.
-3. Click Build Now.
-4. Check the Console Output.
-5. Verify the test results.
+1. Create a Jenkins job named `Inventory-Management-CI`.
+2. Configure the GitHub repository URL.
+3. Configure the project branch.
+4. Use the `Jenkinsfile` available in the repository.
+5. Configure the job as a Pipeline.
+6. Execute the Jenkins pipeline.
 
-## 9. Docker Commands
+### CI Pipeline Operations
 
-Build the Docker image:
+The Jenkins pipeline performs the following operations:
+
+- Retrieves the project source code from GitHub.
+- Installs the required Python dependencies.
+- Performs Python compilation checks.
+- Executes unit tests.
+- Generates test reports.
+
+This helps identify errors early and improves software quality.
+
+## 8. Docker Setup
+
+Docker is used to package the application and its dependencies into a container.
+
+### Build the Docker Image
 
 ```bash
 docker build -t inventory-management-system:latest .
 ```
 
-Run the Docker container:
+### Run the Docker Container
+
+For a local XAMPP database running on port `3307`, execute:
 
 ```bash
-docker run -p 5000:5000 inventory-management-system:latest
+docker run -d --name inventory-container -p 5001:5000 --add-host=host.docker.internal:host-gateway -e DB_HOST=host.docker.internal -e DB_PORT=3307 -e DB_USER=root -e DB_PASSWORD= -e DB_NAME=inventory_db -e SECRET_KEY=inventory_secret_key inventory-management-system:latest
 ```
 
-**Note:** Configure the database connection and Docker networking before running the application inside a container.
-
-## 10. Git Commands for Team Members
-
-Clone the repository:
-
-```bash
-git clone https://github.com/NehaJohn2808/Inventory-Management-System.git
-```
-
-Get the latest updates:
-
-```bash
-git pull origin main
-```
-
-Create a separate branch:
-
-```bash
-git checkout -b feature-your-name
-```
-
-Check modified files:
-
-```bash
-git status
-```
-
-Add changes:
-
-```bash
-git add .
-```
-
-Commit changes:
-
-```bash
-git commit -m "Updated Inventory Management System"
-```
-
-Push the branch:
-
-```bash
-git push origin feature-your-name
-```
-
-After pushing, create a Pull Request on GitHub to merge the changes into the main branch.
-
-## Project Team
-
-| Name | Roll Number |
-|---|---|
-| B Chandini | 24AG1A05BG |
-| D Sathvika | 24AG1A05BN |
-| N Neha | 24AG1A05CS |
-| P Priyanka | 24AG1A05CY |
-
-Class: III Year B.Tech – CSE, Semester I, Section G
-
-
-**College:** ACE Engineering College
+If your database has a password,
