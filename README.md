@@ -162,38 +162,4 @@ Jenkins is used to automate the build and testing process.
 1. Create a Jenkins job named `Inventory-Management-CI`.
 2. Configure the GitHub repository URL.
 3. Configure the project branch.
-4. Use the `Jenkinsfile` available in the repository.
-5. Configure the job as a Pipeline.
-6. Execute the Jenkins pipeline.
-
-### CI Pipeline Operations
-
-The Jenkins pipeline performs the following operations:
-
-- Retrieves the project source code from GitHub.
-- Installs the required Python dependencies.
-- Performs Python compilation checks.
-- Executes unit tests.
-- Generates test reports.
-
-This helps identify errors early and improves software quality.
-
-## 8. Docker Setup
-
-Docker is used to package the application and its dependencies into a container.
-
-### Build the Docker Image
-
-```bash
-docker build -t inventory-management-system:latest .
-```
-
-### Run the Docker Container
-
-For a local XAMPP database running on port `3307`, execute:
-
-```bash
-docker run -d --name inventory-container -p 5001:5000 --add-host=host.docker.internal:host-gateway -e DB_HOST=host.docker.internal -e DB_PORT=3307 -e DB_USER=root -e DB_PASSWORD= -e DB_NAME=inventory_db -e SECRET_KEY=inventory_secret_key inventory-management-system:latest
-```
-
-If your database has a password,
+4. Use the `Jenkinsfile` available in
